@@ -1,0 +1,1 @@
+select drop_partition('{{ params.table }}', '{{ macros.ds_add(ds, -7) }}');

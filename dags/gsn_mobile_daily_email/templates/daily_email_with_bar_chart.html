@@ -1,0 +1,489 @@
+{% macro get_percent_color(value) -%}
+    {% if value > 0.2 %}
+        #178d00
+    {% elif value < -0.2 %}
+        #931d1d
+    {% elif value < -0.01 %}
+        #931d1d
+    {% elif value > 0.01 %}
+        #80b676
+    {% else %}
+        #808080
+    {% endif %}
+{%- endmacro %}
+
+{% macro format_percent(value) -%}
+    <span style="color:{{ get_percent_color(value) }}">{{ value|to_percent_round }}</span>
+{%- endmacro %}
+
+{% macro inverse_get_percent_color(value) -%}
+    {# positive numbers are red and negative numbers are green #}
+    {% if value < -0.2 %}
+        #178d00
+    {% elif value > 0.2 %}
+        #931d1d
+    {% elif value > 0.01 %}
+        #931d1d
+    {% elif value < -0.01 %}
+        #80b676
+    {% else %}
+        #808080
+    {% endif %}
+{%- endmacro %}
+
+{% macro inverse_format_percent(value) -%}
+    <span style="color:{{ inverse_get_percent_color(value) }}">{{ value|to_percent_round }}</span>
+{%- endmacro %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            font-size: 12pt;
+            line-height: 12pt;
+            color: #333;
+        }
+        table {
+            max-width: 100%;
+            background-color: transparent;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        th, td {
+            text-align: left !important;
+            padding: 3px 7px;
+        }
+    
+        td {
+            vertical-align: middle;
+        }
+        
+        td.compare {
+            padding-left: 5px;
+            font-size: 8pt;
+            line-height: 14pt;
+            text-align: right;
+        }
+
+        .dailyemail caption {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #111;
+            line-height: 18pt;
+            margin: 18px 0 6px 0;
+        }
+        .dailyemail table {
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+        .dailyemail th {
+            text-align: left;
+        }
+        .dailyemail thead th {
+            font-size: 10pt;
+            text-transform: uppercase;
+            text-align: left;
+            letter-spacing: -1px;
+        }
+        .dailyemail td.compare {
+            font-size: 10pt;
+            padding-right: 1em;
+        }
+        .dailyemail tr .spacer, .dailyemail tr.spacer td {
+            font-size: 4px;
+            height: 4px;
+        }
+        .dailyemail tr.all, .dailyemail tr.all td {
+            background-color: #eee;
+            font-weight: bold;
+            padding: 5px 0;
+            border-bottom: 1px solid #999;
+        }
+        .dailyemail tfoot td {
+            padding: 1em 0 2em 0;
+        }
+        .dailyemail tfoot small {
+            font-size: 8pt;
+        }
+        .dailyemail div .fineprint p {
+            font-size: 8pt;
+            margin: 0;
+        }
+        .dailyemail .kpi-divider {
+            border-right: 1px solid #aaa;
+        }
+
+        .dailyemail .studio-row td,  .dailyemail .studio-row th {
+            border-top: 2px solid black;
+            border-bottom: 1px solid #aaa;
+            font-weight: bold;
+        }
+        .dailyemail .studio {
+            border-top: 2px solid black;
+            border-bottom: 1px solid #aaa;
+            font-weight: bold;
+        }
+        .dailyemail .studio-annotation {
+            border-top: 2px solid black;
+            border-bottom: 1px solid #aaa;
+            font-weight: normal;
+        }
+        .dailyemail .substudio-row td,  .dailyemail .substudio-row th {
+            border-bottom: 1px solid #aaa;
+            font-style: italic;
+        }
+        .dailyemail .app td{
+            border-bottom: 1px solid #aaa;
+        }
+
+        .dailyemail .spacer-row {
+            height: 30px;
+        }
+    </style>
+</head>
+<!-- padding:3px 7px; vertical-align:middle; border-bottom:1px solid #aaa; border-top:2px solid black; font-weight:normal; text-align:left -->
+<body>
+    <div class="dailyemail">
+        <h1>App KPIs for {{formatted_date}}</h1>
+        <table>
+            <tr>
+                <th colspan="2"></th>
+                <th colspan="2">IAP Revenue</th>
+                <th class="kpi-divider">30-day trend</th>
+                <th colspan="2" class="kpi-divider">Ad Revenue</th>
+                <th colspan="2" class="kpi-divider">DAU <sup>‡</sup></th>
+                <th colspan="2" class="kpi-divider">Installs <sup>§</sup></th>
+                <th colspan="2" class="">Notes</th>
+            </tr>
+            {% for studio_dict in daily_kpi_data_list %}
+                {% if studio_dict.substudio_flag %}
+                    <tr class="app substudio-row">
+                        <td></td>
+                        <td>{{ studio_dict.name }}</td>
+                        <td class="metrics">{{ studio_dict.metrics.curr_bookings|to_currency_round }}</td>
+                        <td class="compare">{{ format_percent(studio_dict.metrics.delta_bookings) }}</td>
+                        <td class="sparkline kpi-divider"><img src="{{ studio_dict.metrics.url_sparkline_bookings }}"></td>
+
+                        <td class="metrics">{{ studio_dict.metrics.curr_ad_rev|to_currency_round }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_ad_rev) }}</td>
+
+                        <td class="metrics">{{ studio_dict.metrics.curr_dau|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_dau) }}</td>
+                        <td class="metrics">{{ studio_dict.metrics.curr_installs|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_installs) }}</td>
+                        <td></td>
+                        <td></td>
+                {% else %}
+                    <tr class="app">
+                        <th class="studio" colspan="2">{{ studio_dict.name }}</th>
+                        <td class="studio metrics">{{ studio_dict.metrics.curr_bookings|to_currency_round }}</td>
+                        <td class="studio compare">{{ format_percent(studio_dict.metrics.delta_bookings) }}</td>
+                        <td class="studio sparkline kpi-divider"><img src="{{ studio_dict.metrics.url_sparkline_bookings }}"></td>
+
+                        <td class="studio metrics">{{ studio_dict.metrics.curr_ad_rev|to_currency_round }}</td>
+                        <td class="studio compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_ad_rev) }}</td>
+
+                        <td class="studio metrics">{{ studio_dict.metrics.curr_dau|to_integer }}</td>
+                        <td class="studio compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_dau) }}</td>
+                        <td class="studio metrics">{{ studio_dict.metrics.curr_installs|to_integer }}</td>
+                        <td class="studio compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_installs) }}</td>
+                    {% if annotations.get(studio_dict.name, '') %}
+                        <td class="studio-annotation">{{ annotations.get(studio_dict.name, '') }}</td>
+                        <td class="studio-annotation"></td>
+                    {% else %}
+                        <td class="studio-annotation"></td>
+                        <td class="studio-annotation"></td>
+                    {% endif %}
+                {% endif %}
+                    </tr>
+                {% for app_dict in studio_dict.app_list %}
+                <tr class="app">
+                    <!-- <td><img src="https://bi.worldwinner.com/app_icons/{{ app_dict.name }}.png" width="25" height="25" style="width:25px;height:25px" /></td> -->
+                    <td><img src="https://s3.amazonaws.com/data-app-logos/{{ app_dict.name }}.png" width="25" height="25" style="width:25px;height:25px" /></td>
+                    <td>{{ app_dict.name }}</td>
+                    {% if app_dict.metrics.curr_bookings %}
+                        <td class="metrics">{{ app_dict.metrics.curr_bookings|to_currency_round }}</td>
+                        <td class="compare">{{ format_percent(app_dict.metrics.delta_bookings) }}</td>
+                        <td class="sparkline kpi-divider"><img src="{{ app_dict.metrics.url_sparkline_bookings }}"></td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+                    {% if (app_dict.metrics.curr_ad_rev) or (app_dict.metrics.curr_ad_rev == 0.0) %}
+                        <td class="metrics">{{ app_dict.metrics.curr_ad_rev|to_currency_round }}</td>
+                        {% if (app_dict.noads) %}
+                            <td class="kpi-divider"></td>
+                        {% else %}
+                            <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_ad_rev) }}</td>
+                        {% endif %}
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                    {% endif %}
+                    {% if app_dict.metrics.curr_dau %}
+                        <td class="metrics">{{ app_dict.metrics.curr_dau|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_dau) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                    {% endif %}
+                    {% if app_dict.metrics.curr_installs %}
+                        <td class="metrics">{{ app_dict.metrics.curr_installs|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_installs) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                    {% endif %}
+                    {% if annotations.get(app_dict.name, '') %}
+                        <td>{{ annotations.get(app_dict.name, '') }}</td>
+                        <td></td>
+                    {% else %}
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+
+                </tr>
+                {% endfor %}
+                {% if not studio_dict.row_spacing %}
+                    <tr class="spacer-row"></tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+    <br/>
+    <div class="fineprint">
+        <p>{{delta_date_range}}</p>
+        <img width="800" height="600" src="{{ iap_rev_historical_url }}" alt="iap_revenue_historical">
+        <p>Data in PST except Ad Rev (mixed), Skill (ET/mixed), Bash (CT) - <a href="https://confluence.worldwinner.com/display/BI/Daily+KPI+Email+Tables">(details)</a>.</p>
+        <p>‡ DAU = Daily Active Users. On mobile, we use daily active devices.</p>
+        <p>GSN Canvas 2 DAU may be double counted in GSN Canvas during ramp up. Install + other KPIs in progress.</p>
+        <p>§ Installs = Number of new installs (mobile) or registrations (web) per day.</p>
+        <p>WW MoWeb DAU & Installs included in Desktop figures.</p>
+        <p>Notes are annotated as of report generation time.</p>
+    </div>
+    <hr/>
+    <div class="dailyemail">
+        <h1>App Player KPIs for {{formatted_date}}</h1>
+        <table>
+            <tr>
+                <th colspan="2"></th>
+                <th colspan="2" class="kpi-divider">% Payers</th>
+                <th colspan="2" class="kpi-divider">Payers<sup>§</sup></th>
+                <th colspan="2" class="kpi-divider">Avg. 7d ARPDAU<sup>‡</sup></th>
+                <th colspan="2" class="kpi-divider">D1 RR%</th>
+                <th colspan="2" class="kpi-divider">D7 RR%</th>
+                <th colspan="2" class="kpi-divider">D30 RR%</th>
+                <th colspan="2" class="kpi-divider">CPI</th>
+            </tr>
+            {% for studio_dict in daily_kpi_data_list %}
+                {% if studio_dict.substudio_flag %}
+                    <tr class="app substudio-row">
+                        <td></td>
+                        <td>{{ studio_dict.name }}</td>
+                {% else %}
+                    <tr class="app studio-row">
+                        <th colspan="2">{{ studio_dict.name }}</th>
+                {% endif %}
+                        <td></td>
+                        <td class="kpi-divider"></td>
+                        <td class="metrics">{{ studio_dict.metrics.curr_payers|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_payers) }}</td>
+                        <td></td>
+                        <td class="kpi-divider"></td>
+                        <td></td>
+                        <td class="kpi-divider"></td>
+                        <td></td>
+                        <td class="kpi-divider"></td>
+                        <td></td>
+                        <td class="kpi-divider"></td>
+                <td></td>
+                <td></td>
+                    </tr>
+                {% for app_dict in studio_dict.app_list %}
+                <tr class="app">
+                    <td><img src="https://s3.amazonaws.com/data-app-logos/{{ app_dict.name }}.png" width="25" height="25" style="width:25px;height:25px" /></td>
+                    <td>{{ app_dict.name }}</td>
+                    {% if app_dict.metrics.curr_pct_payers %}
+                        <td class="metrics">{{ app_dict.metrics.curr_pct_payers|to_percent }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_pct_payers) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td class="compare kpi-divider"></td>
+                    {% endif %}
+                    {% if app_dict.metrics.curr_payers %}
+                        <td class="metrics">{{ app_dict.metrics.curr_payers|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_payers) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td class="compare kpi-divider"></td>
+                    {% endif %}
+                    {% if app_dict.metrics.curr_rolling_arpdau %}
+                        <td class="metrics">{{ app_dict.metrics.curr_rolling_arpdau|to_currency }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_rolling_arpdau) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td class="compare kpi-divider"></td>
+                    {% endif %}
+                    {% if (app_dict.metrics.curr_day1_rr) %}
+                        <td class="metrics">{{ app_dict.metrics.curr_day1_rr|to_percent_round }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_day1_rr) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td class="compare kpi-divider"></td>
+                    {% endif %}
+                    {% if (app_dict.metrics.curr_day7_rr) %}
+                        <td class="metrics">{{ app_dict.metrics.curr_day7_rr|to_percent_round }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_day7_rr) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td class="compare kpi-divider"></td>
+                    {% endif %}
+                    {% if (app_dict.metrics.curr_day30_rr) %}
+                        <td class="metrics">{{ app_dict.metrics.curr_day30_rr|to_percent_round }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_day30_rr) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td class="compare kpi-divider"></td>
+                    {% endif %}
+                    {% if (app_dict.metrics.cpi) %}
+                        <td class="metrics">{{ app_dict.metrics.cpi|to_currency }}</td>
+                        <td class="compare">
+                        {% if app_dict.metrics.cpi_rr %}
+                            {{ inverse_format_percent(app_dict.metrics.cpi_rr) }}
+                        {% endif %}
+                        </td>
+                    {% else %}
+                        <td class="metrics"></td>
+                        <td class="compare"></td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+                {% if not studio_dict.row_spacing %}
+                    <tr class="spacer-row"></tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+    <br/>
+    <div class="fineprint">
+        <p>{{delta_date_range}}</p>
+        <p>‡ 7d ARPDAU Delta calculated against previous week avg.</p>
+        <p>  DAU = Daily Active Users. On mobile, we use daily active devices.</p>
+        <p>§ Payer totals are additive and not deduped across apps.</p>
+        <p>Retention rates reflect new users from 1/7/30 days prior who returned on {{formatted_date}}</p>
+        <p>CPI Delta calculated against prior 30-day avg</p>
+    </div>
+
+    <hr/>
+    <div class='dailyemail' id="mtd">
+         <h1>MTD App KPIs for {{formatted_month}}</h1>
+         <p>KPIs shown are the avg daily values for this month.</p>
+         <table>
+            <tr>
+                <th colspan="2"></th>
+                <th colspan="1">IAP Rev.</th>
+                <th colspan="1">%MoM</th>
+                <!--<th>30-day trend</th>-->
+                <th class="kpi-divider">% vs. Fcst</th>
+                <th colspan="1">Ad Rev.</th>
+                <th colspan="1">%MoM</th>
+                <th class="kpi-divider">% vs. Fcst</th>
+                <th colspan="1">DAU <sup>‡</sup></th>
+                <th colspan="1" class="kpi-divider">%MoM</th>
+                <th colspan="1">Installs <sup>§</sup></th>
+                <th colspan="1">%MoM</th>
+            </tr>
+            {% for studio_dict in mtd_kpi_data_list %}
+                {% if studio_dict.substudio_flag %}
+                    <tr class="app substudio-row">
+                        <td></td>
+                        <td>{{ studio_dict.name }}</td>
+                {% else %}
+                    <tr class="app studio-row">
+                        <th colspan="2">{{ studio_dict.name }}</th>
+                {% endif %}
+
+                        <td class="metrics">{{ studio_dict.metrics.curr_bookings|to_currency_round }}</td>
+                        <td class="compare">{{ format_percent(studio_dict.metrics.delta_bookings) }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(studio_dict.metrics.iap_percent_to_budget) }}</td>
+                        <!--<td class="sparkline"><img src="{{ studio_dict.metrics.url_sparkline_bookings }}"></td>-->
+
+                        <td class="metrics">{{ studio_dict.metrics.curr_ad_rev|to_currency_round }}</td>
+                        <td class="compare">{{ format_percent(studio_dict.metrics.delta_ad_rev) }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(studio_dict.metrics.ad_percent_to_budget) }}</td>
+
+
+                        <td class="metrics">{{ studio_dict.metrics.curr_dau|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(studio_dict.metrics.delta_dau) }}</td>
+                        <td class="metrics">{{ studio_dict.metrics.curr_installs|to_integer }}</td>
+                        <td class="compare">{{ format_percent(studio_dict.metrics.delta_installs) }}</td>
+                    </tr>
+                {% for app_dict in studio_dict.app_list %}
+                <tr class="app">
+                    <!-- <td><img src="https://bi.worldwinner.com/app_icons/{{ app_dict.name }}.png" width="25" height="25" style="width:25px;height:25px" /></td> -->
+                    <td><img src="https://s3.amazonaws.com/data-app-logos/{{ app_dict.name }}.png" width="25" height="25" style="width:25px;height:25px" /></td>
+                    <td>{{ app_dict.name }}</td>
+                    {% if app_dict.metrics.curr_bookings %}
+                        <td class="metrics">{{ app_dict.metrics.curr_bookings|to_currency_round }}</td>
+                        <td class="compare">{{ format_percent(app_dict.metrics.delta_bookings) }}</td>
+                        <!--<td class="sparkline"><img src="{{ app_dict.metrics.url_sparkline_bookings }}"></td>-->
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.iap_percent_to_budget) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+                    {% if (app_dict.metrics.curr_ad_rev) or (app_dict.metrics.curr_ad_rev == 0.0) %}
+                        <td class="metrics">{{ app_dict.metrics.curr_ad_rev|to_currency_round }}</td>
+                        {% if (app_dict.noads) %}
+                            <td></td>
+                            <td class="kpi-divider"></td>
+                        {% else %}
+                            <td class="compare">{{ format_percent(app_dict.metrics.delta_ad_rev) }}</td>
+                            <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.ad_percent_to_budget) }}</td>
+                        {% endif %}
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+                    {% if app_dict.metrics.curr_dau %}
+                        <td class="metrics">{{ app_dict.metrics.curr_dau|to_integer }}</td>
+                        <td class="compare kpi-divider">{{ format_percent(app_dict.metrics.delta_dau) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                    {% endif %}
+
+                    {% if app_dict.metrics.curr_installs %}
+                        <td class="metrics">{{ app_dict.metrics.curr_installs|to_integer }}</td>
+                        <td class="compare">{{ format_percent(app_dict.metrics.delta_installs) }}</td>
+                    {% else %}
+                        <td class="metrics">N/A</td>
+                        <td></td>
+                        <td></td>
+                    {% endif %}
+
+                </tr>
+                {% endfor %}
+                {% if not studio_dict.row_spacing %}
+                    <tr class="spacer-row"></tr>
+                {% endif %}
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="fineprint">
+        <p>% changes are compared to the prior month ({{ formatted_last_month }})</p>
+        <p>"Fcst" reflects the 2019 Budget</p>
+    </div>
+
+
+</body>
+</html>

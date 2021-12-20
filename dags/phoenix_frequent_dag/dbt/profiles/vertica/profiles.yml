@@ -1,0 +1,15 @@
+config:
+  partial_parse: true
+  static_parser: false
+default:
+  outputs:
+    phoenix_frequent_dag:
+      type: vertica
+      host: "{{ env_var('vertica_host') }}"
+      port: 5433
+      username: "{{ env_var('vertica_user') }}"
+      password: "{{ env_var('vertica_password') }}"
+      database: "{{ env_var('vertica_db_name') }}"
+      schema: "phoenix"
+      timeout: 5000
+  target: phoenix_frequent_dag

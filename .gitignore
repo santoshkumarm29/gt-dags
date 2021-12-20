@@ -1,0 +1,4 @@
+*.py[cod]
+*.zip
+backup
+.DS_STORE

@@ -1,0 +1,41 @@
+SELECT  /*+ LABEL ('airflow-skill-worldwinner_gsncom_daily_imports-t_sftp_responsys_ww_pet_tags')*/ worldwinner_user_id,
+       TAG_LAPSED_PCPLAT,
+       TAG_LAPSED_PCGOLD_20GC,
+       TAG_LAPSED_15GC,
+       TAG_LAPSED_5GC,
+       TAG_LAPSED_3500RP,
+       TAG_NONPC20,
+       TAG_NONPC15,
+       TAG_NONPC10,
+       TAG_NONPC5,
+       TAG_SITEWIDE_TEST_NOPROMO,
+       TAG_GR_250,
+       TAG_GR_500,
+       TAG_GR_1000,
+       TAG_CASHGAMES_DEPOSIT,
+       TAG_POGO_NONDEPOSITOR,
+       TAG_INBOXDOLLARS_PP_REG,
+       TAG_GSNMONEYPLAYERS
+FROM airflow.snapshot_responsys_ww_pet_tags
+where ds =  '{{ ds }}'
+EXCEPT
+SELECT worldwinner_user_id,
+       TAG_LAPSED_PCPLAT,
+       TAG_LAPSED_PCGOLD_20GC,
+       TAG_LAPSED_15GC,
+       TAG_LAPSED_5GC,
+       TAG_LAPSED_3500RP,
+       TAG_NONPC20,
+       TAG_NONPC15,
+       TAG_NONPC10,
+       TAG_NONPC5,
+       TAG_SITEWIDE_TEST_NOPROMO,
+       TAG_GR_250,
+       TAG_GR_500,
+       TAG_GR_1000,
+       TAG_CASHGAMES_DEPOSIT,
+       TAG_POGO_NONDEPOSITOR,
+       TAG_INBOXDOLLARS_PP_REG,
+       TAG_GSNMONEYPLAYERS
+FROM airflow.snapshot_responsys_ww_pet_tags
+where ds =  '{{ yesterday_ds }}';

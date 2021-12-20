@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            font-size: 12pt;
+            line-height: 12pt;
+            color: #333;
+        }
+        table {
+            max-width: 100%;
+            background-color: transparent;
+            border-collapse: collapse;
+            border-spacing: 0;
+        }
+
+        th, td {
+            text-align: left !important;
+            padding: 3px 7px;
+        }
+    
+        td {
+            vertical-align: middle;
+        }
+        
+        td.compare {
+            padding-left: 5px;
+            font-size: 8pt;
+            line-height: 14pt;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+   <div class="summaryemail">
+        <h1> WorldWinner LTR - Registration Based: {{ report_date }}</h1>
+        Model version: {{ model_version }}<br>
+        Updated: {{ updated_at }}<br>
+        <h2>Desktop:</h2>
+        {% for (days_observation, days_horizon), score_dist_url in score_dist_desktop_urls.items() %}
+          <img src="{{ score_dist_url }}"><br>
+        {% endfor %}
+        <h2>Mobile:</h2>
+        {% for (days_observation, days_horizon), score_dist_url in score_dist_mobile_urls.items() %}
+          <img src="{{ score_dist_url }}"><br>
+        {% endfor %}
+    </div>
+</body>
+</html>
